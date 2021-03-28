@@ -36,13 +36,13 @@ const Board = () => {
   }
 
   useEffect(() => {
-    NUM_PLAYERS = parseInt(prompt('How many players are going to play Connect 4?'));
-    while (isNaN(NUM_PLAYERS) || NUM_PLAYERS > 5) {
-      NUM_PLAYERS = parseInt(prompt('How many players are going to play Connect 4?'));
+    NUM_PLAYERS = parseInt(prompt('How many players are going to play Connect 4? (min: 2, max: 5)'));
+    while (isNaN(NUM_PLAYERS) || NUM_PLAYERS > 5 || NUM_PLAYERS < 2) {
+      NUM_PLAYERS = parseInt(prompt('How many players are going to play Connect 4? (min: 2, max: 5)'));
     }
-    BOARD_SIZE = parseInt(prompt('Type the size of the board'));
+    BOARD_SIZE = parseInt(prompt('Type the size of the board (min: 4)'));
     while (isNaN(BOARD_SIZE) || BOARD_SIZE < 4) {
-      BOARD_SIZE = parseInt(prompt('Type the size of the board'));
+      BOARD_SIZE = parseInt(prompt('Type the size of the board (min: 4)'));
     }
     createNewGame();
   }, []);

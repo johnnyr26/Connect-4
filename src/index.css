@@ -49,6 +49,7 @@ body {
   border: 1px solid rgb(134, 154, 189);
   border-radius: 100%;
   margin: 10px;
+  cursor: pointer;
 }
 
 button {
@@ -59,4 +60,5 @@ button {
   height: 50px;
   width: 100px;
   border-radius: 10px;
+  cursor: pointer;
 }
