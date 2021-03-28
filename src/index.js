@@ -4,8 +4,8 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
-const BOARD_SIZE = 10;
-const NUM_PLAYERS = 3;
+let BOARD_SIZE = 10;
+let NUM_PLAYERS = 2;
 
 const NUMBERS = [
   'one',
@@ -21,7 +21,7 @@ const Board = () => {
   // 2d array to where each row is each column on display (obviously could be better but I'm too lazy)
   const [columnBoard, setColumnBoard] = useState(createColumnBoard(board));
   const [playerTurn, setPlayerTurn] = useState(0);
-  const [winner, setWinner] = useState('Connect 4');
+  const [message, setMessage] = useState(`Player ${NUMBERS[playerTurn]}'s Turn`);
   
 
   const createNewGame = () => {
@@ -32,12 +32,43 @@ const Board = () => {
       return newBoard;
     });
     setPlayerTurn(0);
-    setWinner('Connect 4');
+    setMessage(`Player one's turn`);
+  }
+
+  useEffect(() => {
+    NUM_PLAYERS = parseInt(prompt('How many players are going to play Connect 4?'));
+    while (isNaN(NUM_PLAYERS) || NUM_PLAYERS > 5) {
+      NUM_PLAYERS = parseInt(prompt('How many players are going to play Connect 4?'));
+    }
+    BOARD_SIZE = parseInt(prompt('Type the size of the board'));
+    while (isNaN(BOARD_SIZE) || BOARD_SIZE < 4) {
+      BOARD_SIZE = parseInt(prompt('Type the size of the board'));
+    }
+    createNewGame();
+  }, []);
+
+  const cellClicked = cell => {
+    const gameOver = message.includes('Game Over!');
+    if (gameOver || cell.isFilled) {
+      return;
+    }
+    // setPlayerTurn must be done first in order for the correct className to be shown
+    setPlayerTurn(playerTurn + 1);
+    setColumnBoard(placeChip(columnBoard, cell.id, playerTurn));
+    setBoard(adjustBoard(columnBoard));
+    setMessage(`Player ${NUMBERS[(playerTurn + 1) % NUM_PLAYERS]}'s turn`);
+    if (checkWinner(board, columnBoard, playerTurn)) {
+      setMessage(`Game Over! Player ${NUMBERS[playerTurn % NUM_PLAYERS]} won!`);
+    }
+    const boardIsFilled = board.every(row => row.every(rowCell => rowCell.isFilled));
+    if (boardIsFilled) {
+      setMessage(`Game Over! Tied!`);
+    }
   }
 
   return (
     <div>
-      <h1>{winner}</h1>
+      <h1>{message}</h1>
       <button onClick={() => {createNewGame()}}>New Game</button>
       <div className="board">
         {
@@ -47,20 +78,8 @@ const Board = () => {
                 return <div 
                     key={cell.id}
                     className={`cell${cell.isFilled ? ' selected ' + NUMBERS[cell.value % NUM_PLAYERS] : ''}`} 
-                    onClick={() => {
-                      const gameOver = winner !== 'Connect 4';
-                      if (gameOver || cell.isFilled) {
-                        return;
-                      }
-                      // setPlayerTurn must be done first in order for the correct className to be shown
-                      setPlayerTurn(playerTurn + 1);
-                      setColumnBoard(placeChip(columnBoard, cell.id, playerTurn));
-                      setBoard(adjustBoard(columnBoard));
-                      if (checkWinner(board, columnBoard, playerTurn)) {
-                        setWinner(`Player ${playerTurn % NUM_PLAYERS + 1} won!`);
-                      }
-                    }} 
-                  ></div>;
+                    onClick={() => {cellClicked(cell)}} 
+                ></div>;
               })
             }</div>
           })
