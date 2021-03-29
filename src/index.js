@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { adjustBoard, createColumnBoard, createBoard } from './setUpGame';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
@@ -6,7 +7,7 @@ import reportWebVitals from './reportWebVitals';
 
 let BOARD_SIZE = 10;
 let NUM_PLAYERS = 2;
-let CONNECT_COUNT = 2;
+let CONNECT_COUNT = 4;
 
 const NUMBERS = [
   'one',
@@ -67,6 +68,24 @@ const Board = () => {
     }
   }
 
+  const cellHovered = cell => {
+    columnBoard.forEach(col => {
+      col.forEach(colCell => {
+        if (cell === colCell) {
+          let index = col.length - 1;
+          while (index >= 0 && col[index].isFilled) {
+            index --;
+          }
+          if (index >= 0) {
+            col[index].isHighlighted = !col[index].isHighlighted;
+          }
+        }
+      });
+    });
+    setBoard(board);
+    setColumnBoard(createColumnBoard(board));
+  }
+
   return (
     <div>
       <h1>{message}</h1>
@@ -76,10 +95,19 @@ const Board = () => {
           board.map((row, rowIndex) => {
             return <div key={rowIndex} className="row">{
               row.map(cell => {
+                let classString = 'cell';
+                if (cell.isFilled) {
+                  classString += ` selected ${NUMBERS[cell.value % NUM_PLAYERS]}`;
+                }
+                if (cell.isHighlighted) {
+                  classString += ` highlighted ${NUMBERS[playerTurn % NUM_PLAYERS]}`;
+                }
                 return <div 
                     key={cell.id}
-                    className={`cell${cell.isFilled ? ' selected ' + NUMBERS[cell.value % NUM_PLAYERS] : ''}`} 
-                    onClick={() => {cellClicked(cell)}} 
+                    className={classString} 
+                    onClick={() => cellClicked(cell)} 
+                    onMouseOver={() => cellHovered(cell)}
+                    onMouseLeave={() => cellHovered(cell)}
                 ></div>;
               })
             }</div>
@@ -194,52 +222,19 @@ const placeChip = (board, id, playerTurn) => {
       return;
     }
   });
+
+
   for (let rowIndex = board[columnIndex].length - 1; rowIndex >= 0; rowIndex --) {
     if (!board[columnIndex][rowIndex].isFilled) {
       board[columnIndex][rowIndex].isFilled = true;
       board[columnIndex][rowIndex].value = playerTurn;
+      board[columnIndex][rowIndex].isHighlighted = false;
+      // by placing chip and not removing the mouse, the cell above souled automatically become highlighted
+      if (board[columnIndex][rowIndex - 1]) {
+        board[columnIndex][rowIndex - 1].isHighlighted = true;
+      }
       break;
     }
-  }
-  return board;
-}
-
-const adjustBoard = board => {
-  const newBoard = [];
-  for (let col = 0; col < board.length; col ++) {
-    const column = [];
-    for (let row = 0; row < board[col].length; row ++) {
-      column.push(board[row][col]);
-    }
-    newBoard.push([...column]);
-  }
-  return newBoard;
-}
-
-const createColumnBoard = board => {
-  const columnBoard = [];
-  for (let col = 0; col < board.length; col ++) {
-    const column = [];
-    for (let row = 0; row < board[col].length; row ++) {
-      column.push(board[row][col]);
-    }
-    columnBoard.push([...column]);
-  }
-  return columnBoard;
-}
-
-const createBoard = boardSize => {
-  const board = [];
-  for (let row = 0; row < boardSize; row ++) {
-    const rowArray = [];
-    for (let col = 0; col < boardSize; col ++) {
-      rowArray.push({
-        id: row * boardSize + col,
-        isFilled: false,
-        value: null
-      });
-    }
-    board.push([...rowArray]);
   }
   return board;
 }

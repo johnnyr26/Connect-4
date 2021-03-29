@@ -30,6 +30,9 @@ body {
 .five {
   background-color: yellow;
 }
+.highlighted {
+  opacity: 0.4;
+}
 .row {
   height: 50px;
   display: flex;
