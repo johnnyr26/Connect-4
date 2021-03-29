@@ -6,6 +6,7 @@ import reportWebVitals from './reportWebVitals';
 
 let BOARD_SIZE = 10;
 let NUM_PLAYERS = 2;
+let CONNECT_COUNT = 2;
 
 const NUMBERS = [
   'one',
@@ -110,7 +111,7 @@ const checkDiagonals = (board, player) => {
         consecutiveCells = 1;
         let tempRow = rowIndex;
         let tempCol = colIndex;
-        while (consecutiveCells !== 0 && consecutiveCells !== 4) {
+        while (consecutiveCells !== 0 && consecutiveCells !== CONNECT_COUNT) {
           tempRow ++;
           tempCol ++;
           if (tempRow < board.length && tempCol < board[tempRow].length) {
@@ -124,14 +125,14 @@ const checkDiagonals = (board, player) => {
             break;
           }
         }
-        if (consecutiveCells >= 4) {
+        if (consecutiveCells >= CONNECT_COUNT) {
             hasConnectFour = true;
             return;
         }
         consecutiveCells = 1;
         tempRow = rowIndex;
         tempCol = colIndex;
-        while (consecutiveCells !== 0 && consecutiveCells !== 4) {
+        while (consecutiveCells !== 0 && consecutiveCells !== CONNECT_COUNT) {
           tempRow ++;
           tempCol --;
           if (tempRow >= 0 && tempCol >= 0 && tempRow < board.length && tempCol < board[tempRow].length) {
@@ -145,7 +146,7 @@ const checkDiagonals = (board, player) => {
             break;
           }
         }
-        if (consecutiveCells >= 4) {
+        if (consecutiveCells >= CONNECT_COUNT) {
             hasConnectFour = true;
             return;
         }
@@ -165,7 +166,7 @@ const checkDirection = (board, player) => {
     row.forEach(cell => {
       if (cell.isFilled && cell.value % NUM_PLAYERS === player % NUM_PLAYERS) {
         consecutiveCells ++;
-        if (consecutiveCells >= 4) {
+        if (consecutiveCells >= CONNECT_COUNT) {
           playerWon = true;
           return;
         }
