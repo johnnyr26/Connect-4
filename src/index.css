@@ -50,6 +50,7 @@ body {
 }
 
 .cell {
+  box-sizing: border-box;
   width: 50px;
   height: 50px;
   border: 1px solid rgb(134, 154, 189);

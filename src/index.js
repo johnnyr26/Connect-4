@@ -131,135 +131,37 @@ const findConnectedPieces = (board, playerTurn) => {
   const playerValue = playerTurn % NUM_PLAYERS;
   const playerCells = board.map(row => row.filter(cell => cell.value !== null && cell.value % NUM_PLAYERS === playerValue));
   const flattenedPlayerCells = playerCells.flat(Infinity);
-  const checkRow = () => {
-    let hasConnect = false;
+  
+  const additionalFactor = [1, BOARD_SIZE, BOARD_SIZE + 1, BOARD_SIZE - 1];
+  let additionalFactorIndex = 0;
+  let hasConnect = false;
+  while (additionalFactorIndex < additionalFactor.length && !hasConnect) {
     flattenedPlayerCells.forEach(cell => {
       if (hasConnect) {
         return;
       }
-      let id = cell.id + 1;
+      let id = cell.id + additionalFactor[additionalFactorIndex];
       let consecutiveCells = 1;
       cell.isConnected = true;
       let nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
       while (nextCell) {
         consecutiveCells ++;
-        id ++;
+        id += additionalFactor[additionalFactorIndex];
         nextCell.isConnected = true;
-        nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
         if (consecutiveCells === CONNECT_COUNT) {
+          // minor bug in which it will show the connected pieces from different rows that were adjacent by value
+          if (additionalFactorIndex === 0 && nextCell.value / BOARD_SIZE !== cell.value / BOARD_SIZE) {
+            break;
+          }
           hasConnect = true;
           return;
         }
-      }
-      flattenedPlayerCells.forEach(flattenedCell => flattenedCell.isConnected = false);
-    });
-    return hasConnect;
-  }
-  const checkColumn = () => {
-    // TODO: 9, 10, 11, 12 are not all in same column
-    let hasConnect = false;
-    flattenedPlayerCells.forEach(cell => {
-      if (hasConnect) {
-        return;
-      }
-      let id = cell.id + BOARD_SIZE;
-      let consecutiveCells = 1;
-      cell.isConnected = true;
-      let nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
-      while (nextCell) {
-        consecutiveCells ++;
-        id += BOARD_SIZE;
-        nextCell.isConnected = true;
         nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
-        if (consecutiveCells === CONNECT_COUNT) {
-          hasConnect = true;
-          return;
-        }
       }
       flattenedPlayerCells.forEach(flattenedCell => flattenedCell.isConnected = false);
     });
-    return hasConnect;
+    additionalFactorIndex ++;
   }
-  const checkBackwardDiagonal = () => {
-    let hasConnect = false;
-    flattenedPlayerCells.forEach(cell => {
-      if (hasConnect) {
-        return;
-      }
-      let id = cell.id + BOARD_SIZE - 1;
-      let consecutiveCells = 1;
-      cell.isConnected = true;
-      let nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
-      while (nextCell) {
-        consecutiveCells ++;
-        id += BOARD_SIZE - 1;
-        nextCell.isConnected = true;
-        nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
-        if (consecutiveCells === CONNECT_COUNT) {
-          hasConnect = true;
-          return;
-        }
-      }
-      flattenedPlayerCells.forEach(flattenedCell => flattenedCell.isConnected = false);
-    });
-    return hasConnect;
-  }
-  const checkForwardDiagonal = () => {
-    let hasConnect = false;
-    flattenedPlayerCells.forEach(cell => {
-      if (hasConnect) {
-        return;
-      }
-      let id = cell.id + BOARD_SIZE + 1;
-      let consecutiveCells = 1;
-      cell.isConnected = true;
-      let nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
-      while (nextCell) {
-        consecutiveCells ++;
-        id += BOARD_SIZE + 1;
-        nextCell.isConnected = true;
-        nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
-        if (consecutiveCells === CONNECT_COUNT) {
-          hasConnect = true;
-          return;
-        }
-      }
-      flattenedPlayerCells.forEach(flattenedCell => flattenedCell.isConnected = false);
-    });
-    return hasConnect;
-  }
-
-  console.log(flattenedPlayerCells);
-
-  const rowWinner = checkRow();
-
-  if (!rowWinner) {
-    const colWinner = checkColumn();
-    if (!colWinner) {
-      const forwardDiagonalWinner = checkForwardDiagonal();
-      if (!forwardDiagonalWinner) {
-        checkBackwardDiagonal();
-      }
-    }
-  }
-  // let connectedPieces = 0;
-  // board.forEach(row => {
-  //   connectedPieces = 0;
-  //   row.forEach(cell => {
-  //     const playerValue = playerTurn % NUM_PLAYERS;
-  //     if (cell.isFilled && cell.value % NUM_PLAYERS === playerValue) {
-  //       cell.isConnected = true;
-  //       if (++connectedPieces >= 4) {
-  //         return;
-  //       }
-  //     } else {
-  //       row.forEach(rowCell => rowCell.isConnected = false);
-  //     }
-  //   });
-  //   if (connectedPieces >= 4) {
-  //     return;
-  //   }
-  // });
 }
 
 const checkWinner = (board, columnBoard, player) => {
