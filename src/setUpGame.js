@@ -31,7 +31,8 @@ export const createBoard = boardSize => {
             id: row * boardSize + col,
             isFilled: false,
             value: null,
-            isHighlighted: false
+            isHighlighted: false,
+            isConnected: false
         });
         }
         board.push([...rowArray]);

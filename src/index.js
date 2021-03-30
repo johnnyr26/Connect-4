@@ -25,8 +25,8 @@ const Board = () => {
   const [playerTurn, setPlayerTurn] = useState(0);
   const [message, setMessage] = useState(`Player ${NUMBERS[playerTurn]}'s Turn`);
   
-
   const createNewGame = () => {
+    getNumberOfPlayersAndBoardSize();
     setBoard(() => {
       const newBoard = createBoard(BOARD_SIZE);
       // column board has to be adjusted after new board is created since it won't update outside
@@ -37,7 +37,7 @@ const Board = () => {
     setMessage(`Player one's turn`);
   }
 
-  useEffect(() => {
+  const getNumberOfPlayersAndBoardSize = () => {
     NUM_PLAYERS = parseInt(prompt('How many players are going to play Connect 4? (min: 2, max: 5)'));
     while (isNaN(NUM_PLAYERS) || NUM_PLAYERS > 5 || NUM_PLAYERS < 2) {
       NUM_PLAYERS = parseInt(prompt('How many players are going to play Connect 4? (min: 2, max: 5)'));
@@ -46,6 +46,9 @@ const Board = () => {
     while (isNaN(BOARD_SIZE) || BOARD_SIZE < 4) {
       BOARD_SIZE = parseInt(prompt('Type the size of the board (min: 4)'));
     }
+  }
+
+  useEffect(() => {
     createNewGame();
   }, []);
 
@@ -61,6 +64,9 @@ const Board = () => {
     setMessage(`Player ${NUMBERS[(playerTurn + 1) % NUM_PLAYERS]}'s turn`);
     if (checkWinner(board, columnBoard, playerTurn)) {
       setMessage(`Game Over! Player ${NUMBERS[playerTurn % NUM_PLAYERS]} won!`);
+      findConnectedPieces(board, playerTurn);
+      setBoard(board);
+      setColumnBoard(createColumnBoard(board));
     }
     const boardIsFilled = board.every(row => row.every(rowCell => rowCell.isFilled));
     if (boardIsFilled) {
@@ -102,6 +108,9 @@ const Board = () => {
                 if (cell.isHighlighted) {
                   classString += ` highlighted ${NUMBERS[playerTurn % NUM_PLAYERS]}`;
                 }
+                if (cell.isConnected) {
+                  classString += ' winning-cells';
+                }
                 return <div 
                     key={cell.id}
                     className={classString} 
@@ -116,6 +125,141 @@ const Board = () => {
       </div>
     </div>
   );
+}
+
+const findConnectedPieces = (board, playerTurn) => {
+  const playerValue = playerTurn % NUM_PLAYERS;
+  const playerCells = board.map(row => row.filter(cell => cell.value !== null && cell.value % NUM_PLAYERS === playerValue));
+  const flattenedPlayerCells = playerCells.flat(Infinity);
+  const checkRow = () => {
+    let hasConnect = false;
+    flattenedPlayerCells.forEach(cell => {
+      if (hasConnect) {
+        return;
+      }
+      let id = cell.id + 1;
+      let consecutiveCells = 1;
+      cell.isConnected = true;
+      let nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
+      while (nextCell) {
+        consecutiveCells ++;
+        id ++;
+        nextCell.isConnected = true;
+        nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
+        if (consecutiveCells === CONNECT_COUNT) {
+          hasConnect = true;
+          return;
+        }
+      }
+      flattenedPlayerCells.forEach(flattenedCell => flattenedCell.isConnected = false);
+    });
+    return hasConnect;
+  }
+  const checkColumn = () => {
+    // TODO: 9, 10, 11, 12 are not all in same column
+    let hasConnect = false;
+    flattenedPlayerCells.forEach(cell => {
+      if (hasConnect) {
+        return;
+      }
+      let id = cell.id + BOARD_SIZE;
+      let consecutiveCells = 1;
+      cell.isConnected = true;
+      let nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
+      while (nextCell) {
+        consecutiveCells ++;
+        id += BOARD_SIZE;
+        nextCell.isConnected = true;
+        nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
+        if (consecutiveCells === CONNECT_COUNT) {
+          hasConnect = true;
+          return;
+        }
+      }
+      flattenedPlayerCells.forEach(flattenedCell => flattenedCell.isConnected = false);
+    });
+    return hasConnect;
+  }
+  const checkBackwardDiagonal = () => {
+    let hasConnect = false;
+    flattenedPlayerCells.forEach(cell => {
+      if (hasConnect) {
+        return;
+      }
+      let id = cell.id + BOARD_SIZE - 1;
+      let consecutiveCells = 1;
+      cell.isConnected = true;
+      let nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
+      while (nextCell) {
+        consecutiveCells ++;
+        id += BOARD_SIZE - 1;
+        nextCell.isConnected = true;
+        nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
+        if (consecutiveCells === CONNECT_COUNT) {
+          hasConnect = true;
+          return;
+        }
+      }
+      flattenedPlayerCells.forEach(flattenedCell => flattenedCell.isConnected = false);
+    });
+    return hasConnect;
+  }
+  const checkForwardDiagonal = () => {
+    let hasConnect = false;
+    flattenedPlayerCells.forEach(cell => {
+      if (hasConnect) {
+        return;
+      }
+      let id = cell.id + BOARD_SIZE + 1;
+      let consecutiveCells = 1;
+      cell.isConnected = true;
+      let nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
+      while (nextCell) {
+        consecutiveCells ++;
+        id += BOARD_SIZE + 1;
+        nextCell.isConnected = true;
+        nextCell = flattenedPlayerCells.find(flattenedCell => flattenedCell.id === id);
+        if (consecutiveCells === CONNECT_COUNT) {
+          hasConnect = true;
+          return;
+        }
+      }
+      flattenedPlayerCells.forEach(flattenedCell => flattenedCell.isConnected = false);
+    });
+    return hasConnect;
+  }
+
+  console.log(flattenedPlayerCells);
+
+  const rowWinner = checkRow();
+
+  if (!rowWinner) {
+    const colWinner = checkColumn();
+    if (!colWinner) {
+      const forwardDiagonalWinner = checkForwardDiagonal();
+      if (!forwardDiagonalWinner) {
+        checkBackwardDiagonal();
+      }
+    }
+  }
+  // let connectedPieces = 0;
+  // board.forEach(row => {
+  //   connectedPieces = 0;
+  //   row.forEach(cell => {
+  //     const playerValue = playerTurn % NUM_PLAYERS;
+  //     if (cell.isFilled && cell.value % NUM_PLAYERS === playerValue) {
+  //       cell.isConnected = true;
+  //       if (++connectedPieces >= 4) {
+  //         return;
+  //       }
+  //     } else {
+  //       row.forEach(rowCell => rowCell.isConnected = false);
+  //     }
+  //   });
+  //   if (connectedPieces >= 4) {
+  //     return;
+  //   }
+  // });
 }
 
 const checkWinner = (board, columnBoard, player) => {

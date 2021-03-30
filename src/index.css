@@ -30,6 +30,9 @@ body {
 .five {
   background-color: yellow;
 }
+.winning-cells {
+  border: solid purple 3px !important;
+}
 .highlighted {
   opacity: 0.4;
 }
