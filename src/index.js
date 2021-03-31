@@ -67,11 +67,11 @@ const Board = () => {
       // findConnectedPieces(board, playerTurn);
       setBoard(board);
       setColumnBoard(createColumnBoard(board));
-    } else {
-      const boardIsFilled = board.every(row => row.every(rowCell => rowCell.isFilled));
-      if (boardIsFilled) {
-        setMessage(`Game Over! Tied!`);
-      }
+      return;
+    }
+    const boardIsFilled = board.every(row => row.every(rowCell => rowCell.isFilled));
+    if (boardIsFilled) {
+      setMessage(`Game Over! Tied!`);
     }
   }
 
@@ -145,6 +145,11 @@ const checkDiagonals = (board, player) => {
   let rowIndex = 0;
   let colIndex = 0;
   let hasConnectFour = false;
+
+  const gameOver = board.some(row => row.some(cell => cell.isConnected));
+  if (gameOver) {
+    return true;
+  }
 
   board.forEach(row => {
     consecutiveCells = 0;
